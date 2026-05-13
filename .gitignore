@@ -1,0 +1,11 @@
+Listings/
+Objects/
+*.uvgui.*
+*.uvopt
+*.bak
+*.lst
+*.obj
+*.crf
+*.d
+*.axf
+*.hex
