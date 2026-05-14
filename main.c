@@ -12,14 +12,13 @@ sbit PWM_OUT = P2^0;
 unsigned int Data1,Data2;
 void main()
 {
-	Compare=5;
+	Compare=50;
 	Timer0_Init();
 	Uart1_Init();
 	while(1)
 	{
-		Data1=XPT2046_Read(XPT2046_XP_8);
-		Data2=XPT2046_Read(XPT2046_VBAT_8);
-		printf("%d,%d\n",Data1,Data2);
+		Data1=XPT2046_Read(XPT2046_AUX_12);
+		printf("%d\n",Data1);
 		Delay(100);
 		if (flag)
 		{
