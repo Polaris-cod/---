@@ -7,9 +7,12 @@
 
 xdata unsigned char Receive[30];
 volatile unsigned char flag,pwm,Compare;
+volatile unsigned int f,T=0xFF9C;
 sbit PWM_OUT = P2^0;
 
-unsigned int Data1,Data2;
+void Set_f(unsigned int f);
+
+unsigned int Data1,Data2,Data3;
 void main()
 {
 	Compare=50;
@@ -18,24 +21,44 @@ void main()
 	while(1)
 	{
 		Data1=XPT2046_Read(XPT2046_AUX_12);
-		printf("%d\n",Data1);
+		Data2=XPT2046_Read(XPT2046_XP_12);
+		Data3=XPT2046_Read(XPT2046_VBAT_12);
+		printf("%d,%d,%d\n",Data1,Data2,Data3);
 		Delay(100);
 		if (flag)
 		{
 			unsigned char *p=Receive;
 			flag=0;
-			while (*p!='=')
+			if(*p=='v')
 			{
+				while (*p!='=')
+				{
+					p++;
+				}
 				p++;
+				while (*p!='\0')
+				{
+					pwm=pwm*10+(*p-'0');
+					p++;
+				}
+				Compare=pwm;
+				pwm=0;
 			}
-			p++;
-			while (*p!='\0')
+			if(*p=='f')
 			{
-				pwm=pwm*10+(*p-'0');
+				while (*p!='=')
+				{
+					p++;
+				}
 				p++;
+				while (*p!='\0')
+				{
+					f=f*10+(*p-'0');
+					p++;
+				}
+				Set_f(f);
+				f=0;
 			}
-			Compare=pwm;
-			pwm=0;
 		}
 	}
 }
@@ -65,8 +88,8 @@ void UART_Routine() interrupt 4
 void Timer0_Routine() interrupt 1
 {
 	static unsigned char T0Count=0;
-	TL0 = 0x9C;				//设置定时初始值
-	TH0 = 0xFF;
+	TH0 = T >> 8;
+	TL0 = T & 0xFF;
 	T0Count++;
 	T0Count%=100;
 	if (T0Count<Compare)
@@ -75,4 +98,11 @@ void Timer0_Routine() interrupt 1
 	}
 	else
 		PWM_OUT=1;
+}
+
+void Set_f(unsigned int f)
+{
+	T=65536-f/100;
+	TH0 = T >> 8;
+	TL0 = T & 0xFF;
 }
